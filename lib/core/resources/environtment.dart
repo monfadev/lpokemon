@@ -1,0 +1,1 @@
+const String endpoint = "https://pokeapi.co/api/v2/pokemon/";
