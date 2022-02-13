@@ -11,51 +11,67 @@ class PokemonParamsPage extends StatefulWidget {
 }
 
 class _PokemonParamsPageState extends State<PokemonParamsPage> {
-  List<Pokemon> _items = [];
-  int offset = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    loadItem();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Pokemon 2"),
       ),
-      body: NotificationListener<ScrollEndNotification>(
-        child: ListView.builder(
-          itemCount: _items.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(_items[index].name ?? "Not Available"),
-            );
-          },
-        ),
-        onNotification: (notification) {
-          offset++;
-          PokemonHttp.listOfPokemon2(offset).then((value) {
-            setState(() {
-              _items.addAll(value);
-            });
-          });
-          return true;
+      body: FutureBuilder<List<Pokemon>>(
+        future: PokemonHttp.listOfPokemon2(0),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData && snapshot.hasError) {
+            return const Center(child: Text("Items not found"));
+          }
+
+          return PokemonList(snapshot: snapshot.data);
         },
       ),
     );
   }
+}
 
-  void loadItem() async {
-    var resp = await PokemonHttp.listOfPokemon2(offset);
-    if (resp.isNotEmpty) {
-      if (mounted) {
-        setState(() {
-          _items = resp;
+class PokemonList extends StatefulWidget {
+  final dynamic snapshot;
+  const PokemonList({Key? key, required this.snapshot}) : super(key: key);
+
+  @override
+  State<PokemonList> createState() => _PokemonListState();
+}
+
+class _PokemonListState extends State<PokemonList> {
+  List<Pokemon> _items = [];
+  int offset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = widget.snapshot;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollEndNotification>(
+      child: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text("$index ${_items[index].name}"),
+          );
+        },
+      ),
+      onNotification: (notification) {
+        offset = offset + 20;
+        PokemonHttp.listOfPokemon2(offset).then((value) {
+          setState(() {
+            _items.addAll(value);
+          });
         });
-      }
-    }
+        return true;
+      },
+    );
   }
 }
