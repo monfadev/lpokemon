@@ -45,6 +45,7 @@ class PokemonList extends StatefulWidget {
 class _PokemonListState extends State<PokemonList> {
   List<Pokemon> _items = [];
   int offset = 0;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -56,20 +57,26 @@ class _PokemonListState extends State<PokemonList> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollEndNotification>(
       child: ListView.builder(
-        itemCount: _items.length,
+        controller: _scrollController,
+        itemCount: _items.length + 1,
         itemBuilder: (context, index) {
+          if (index == _items.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
           return ListTile(
             title: Text("$index ${_items[index].name}"),
           );
         },
       ),
       onNotification: (notification) {
-        offset = offset + 20;
-        PokemonHttp.listOfPokemon2(offset).then((value) {
-          setState(() {
-            _items.addAll(value);
+        if (notification.metrics.pixels == _scrollController.position.maxScrollExtent) {
+          offset = offset + 20;
+          PokemonHttp.listOfPokemon2(offset).then((value) {
+            setState(() {
+              _items.addAll(value);
+            });
           });
-        });
+        }
         return true;
       },
     );
