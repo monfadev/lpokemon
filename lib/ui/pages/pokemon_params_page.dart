@@ -54,6 +54,12 @@ class _PokemonListState extends State<PokemonList> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return NotificationListener<ScrollEndNotification>(
       child: ListView.builder(
