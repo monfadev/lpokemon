@@ -45,7 +45,6 @@ class PokemonList extends StatefulWidget {
 class _PokemonListState extends State<PokemonList> {
   List<Pokemon> _items = [];
   int offset = 0;
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -54,16 +53,9 @@ class _PokemonListState extends State<PokemonList> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return NotificationListener<ScrollEndNotification>(
       child: ListView.builder(
-        controller: _scrollController,
         itemCount: _items.length + 1,
         itemBuilder: (context, index) {
           if (index == _items.length) {
@@ -75,7 +67,7 @@ class _PokemonListState extends State<PokemonList> {
         },
       ),
       onNotification: (notification) {
-        if (notification.metrics.pixels == _scrollController.position.maxScrollExtent) {
+        if (notification.metrics.pixels / notification.metrics.maxScrollExtent > 0.33) {
           offset = offset + 20;
           PokemonHttp.listOfPokemon2(offset).then((value) {
             setState(() {
